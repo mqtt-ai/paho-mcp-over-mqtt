@@ -1,21 +1,22 @@
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "mcp/mcp.h"
-#include "mcp/server/server.h"
+#include "../include/mcp.h"
+#include "../include/mcp_server.h"
 
 void signal_handler(int sig)
 {
     (void) sig;
 }
 
-const char *add_numbers(size_t n_args, mcp_tool_arg_t *args)
+const char *add_numbers(int n_args, property_t *args)
 {
     (void) n_args;
-    int a = args[0].value.value.i;
-    int b = args[1].value.value.i;
+    int a = args[0].value.integer_value;
+    int b = args[1].value.integer_value;
 
     int result = a + b;
 
@@ -25,60 +26,45 @@ const char *add_numbers(size_t n_args, mcp_tool_arg_t *args)
 }
 
 mcp_tool_t tool = {
-    .name        = "add",
-    .description = "Adds two numbers",
-    .call        = add_numbers,
-    .n_args      = 2,
-    .args =
-        (mcp_tool_arg_t[]) {
+    .name           = "add",
+    .description    = "Adds two numbers",
+    .call           = add_numbers,
+    .property_count = 2,
+    .properties =
+        (property_t[]) {
             {
-                .name        = "a",
-                .description = "First number",
-                .value       = { .value_e = MCP_VALUE_INT, .value.i = 0 },
+                .name                = "a",
+                .description         = "First number",
+                .type                = PROPERTY_INTEGER,
+                .value.integer_value = 0,
             },
             {
-                .name        = "b",
-                .description = "Second number",
-                .value       = { .value_e = MCP_VALUE_INT, .value.i = 0 },
+                .name                = "b",
+                .description         = "Second number",
+                .type                = PROPERTY_INTEGER,
+                .value.integer_value = 0,
             },
         },
 };
 
-mcp_resource_t resources[] = {
-    {
-        .uri         = "file://resource/",
-        .name        = "Example Resource",
-        .description = "This is an example resource ",
-        .mime_type   = "text/plain",
-        .is_binary   = false,
-    },
-};
-
-int resource_read(const mcp_resource_t *resource, uint8_t **bytes,
-                  size_t *n_bytes)
-{
-    (void) resource;
-    const char *data = "This is the content of the example resource.";
-    *n_bytes         = strlen(data) + 1;
-    *bytes           = (uint8_t *) strdup(data);
-    return 0; // Success
-}
-
 void mcp_server_example()
 {
-    mcp_server_tp_t tp     = { .tp_e = MCP_SERVER_STDIO };
-    mcp_server_t *  server = mcp_server_init(tp, 4096);
+    mcp_server_t *server = mcp_server_init(
+        "ESP32 Demo Server Name", "This is an example MCP server",
+        "tcp://broker.emqx.io:1883", "example_client", NULL, NULL, NULL);
 
-    mcp_server_register_tools(server, &tool, 1);
-    mcp_server_register_resources(server, resources, 1, resource_read);
+    mcp_server_register_tool(server, 1, &tool);
 
     mcp_server_run(server);
-
-    printf("mcp server example stopped\n");
 }
 
 int main()
 {
     mcp_server_example();
+
+    while (1) {
+        sleep(1);
+    }
+
     return 0;
 }

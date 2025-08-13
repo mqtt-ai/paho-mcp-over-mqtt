@@ -24,6 +24,9 @@ add_library(mcp-over-mqtt SHARED)
 target_include_directories(mcp-over-mqtt PRIVATE include)
 target_sources(mcp-over-mqtt PRIVATE ${MCP_SOURCES}) 
 
+add_executable(server examples/server.c)
+target_link_libraries(server mcp-over-mqtt paho-mqtt3a cjson)
+
 include(GNUInstallDirs)
 if(UNIX)
 	mark_as_advanced(CLEAR

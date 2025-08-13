@@ -19,3 +19,11 @@ $ git clone https://github.com/DaveGamble/cJSON
 $ cd cJSON && mkdir build && cd build
 $ cmake ..&& make && sudo make install
 ```
+
+## Build and Install
+
+```shell
+$ git clone https://github.com/mqtt-ai/paho-mcp-over-mqtt
+$ cd paho-mcp-over-mqtt && mkdir build && cd build
+$ cmake .. && make && sudo make install
+```
